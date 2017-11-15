@@ -25,6 +25,7 @@ import kotlinx.android.synthetic.main.content_main.*
 import me.foji.realmhelper.RealmHelper
 import kotlin.properties.Delegates
 import com.bumptech.glide.Glide
+import com.supcoder.fundcrawler.utils.ListDataSave
 
 
 open class MainActivity : AppCompatActivity() {
@@ -43,6 +44,9 @@ open class MainActivity : AppCompatActivity() {
 
     private var hisRecyclerView: RecyclerView? = null
 
+
+    private var dataSave: ListDataSave? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -50,6 +54,7 @@ open class MainActivity : AppCompatActivity() {
         initData()
         initRecyclerView()
         initPopupWindow()
+        initSwipeRefreshLayout()
         bindEvent()
     }
 
@@ -59,6 +64,8 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun initData() {
         mRealmHelper = RealmHelper.get(this)
+        dataSave = ListDataSave(applicationContext, "fund")
+        mData = dataSave!!.getDataList<String>("fundList") as MutableList<String>
     }
 
 
@@ -143,6 +150,14 @@ open class MainActivity : AppCompatActivity() {
     }
 
 
+    /**
+     *  初始化SwipeRefreshLayout
+     */
+    private fun initSwipeRefreshLayout() {
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark)
+        swipeRefreshLayout.isEnabled = false
+    }
+
     private fun refreshHis() {
         mRealmHelper.use {
             val hisRecords = where(HistoryEntity::class.java).findAll()
@@ -194,20 +209,31 @@ open class MainActivity : AppCompatActivity() {
         }
 
         cleanImg.setOnClickListener {
+            swipeRefreshLayout.isRefreshing = true
             Thread(Runnable {
                 Glide.get(application).clearDiskCache()
-                runOnUiThread { showSnackBar("缓存清理成功") }
+                runOnUiThread {
+                    Glide.get(application).clearMemory()
+                    showSnackBar("缓存清理成功")
+                    swipeRefreshLayout.isRefreshing = false
+                }
             }).start()
         }
+
+
     }
 
 
     override fun onBackPressed() {
-
         val current = System.currentTimeMillis()
         if (current - mLastClickBack > 3 * 1000) {
             mLastClickBack = System.currentTimeMillis()
             showSnackBar("再按一次返回键退出程序")
+
+            if (dataSave != null && mAdapter != null) {
+                dataSave!!.setDataList("fundList", mAdapter.data)
+            }
+
             return
         }
         finish()
