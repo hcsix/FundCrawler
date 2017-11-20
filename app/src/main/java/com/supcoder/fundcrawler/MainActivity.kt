@@ -25,7 +25,14 @@ import kotlinx.android.synthetic.main.content_main.*
 import me.foji.realmhelper.RealmHelper
 import kotlin.properties.Delegates
 import com.bumptech.glide.Glide
+import com.supcoder.fundcrawler.http.HtmlParserUtil
 import com.supcoder.fundcrawler.utils.ListDataSave
+import android.support.design.widget.BottomSheetDialog
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.DefaultItemAnimator
+import com.chad.library.adapter.base.BaseQuickAdapter
+import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
+import com.supcoder.fundcrawler.http.ProcessMessege
 
 
 open class MainActivity : AppCompatActivity() {
@@ -74,7 +81,20 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun initRecyclerView() {
 
-        mAdapter = ImageAdapter(mData)
+        mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener {  fundId ->
+            Log.e("12",fundId)
+            Thread(Runnable {
+                val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
+
+                for (item in mList){
+                    Log.e("12",item.toString())
+                }
+
+                runOnUiThread {
+                    openBottom(mList)
+                }
+            }).start()
+        })
         mAdapter.openLoadAnimation()
 
         val itemDragAndSwipeCallback = ItemDragAndSwipeCallback(mAdapter)
@@ -96,6 +116,8 @@ open class MainActivity : AppCompatActivity() {
                 hideKeyboard(editText)
             }
         })
+
+
 
 
     }
@@ -154,7 +176,7 @@ open class MainActivity : AppCompatActivity() {
      *  初始化SwipeRefreshLayout
      */
     private fun initSwipeRefreshLayout() {
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimaryDark)
+        swipeRefreshLayout.setColorSchemeResources(R.color.red)
         swipeRefreshLayout.isEnabled = false
     }
 
@@ -174,7 +196,7 @@ open class MainActivity : AppCompatActivity() {
     private fun bindEvent() {
 
         addImg.setOnClickListener {
-            val editTextStr = editText.text.toString().trim();
+            val editTextStr = editText.text.toString().trim()
             if ("" != editTextStr) {
                 if (mAdapter.data.contains(editText.text.toString().trim())) {
                     showSnackBar(editTextStr + " 号基金已存在")
@@ -221,6 +243,8 @@ open class MainActivity : AppCompatActivity() {
         }
 
 
+
+
     }
 
 
@@ -248,9 +272,22 @@ open class MainActivity : AppCompatActivity() {
 
 
     private fun showSnackBar(hint: String) {
-        val snackBar = Snackbar.make(recyclerView, hint, 5000)
-        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+        val snackBar = Snackbar.make(recyclerView, hint, 3000)
+        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.iron))
         snackBar.show()
     }
 
+
+    private fun openBottom(list: List<ProcessMessege>) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
+        recyclerView.itemAnimator = DefaultItemAnimator()
+//        recyclerView.layoutManager = GridLayoutManager(this, 3)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = BottomSheetAdapter(list)
+        recyclerView.adapter = adapter
+        val dialog = BottomSheetDialog(this)
+        dialog.setContentView(view)
+        dialog.show()
+    }
 }

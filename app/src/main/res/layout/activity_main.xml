@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@color/white"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
@@ -31,6 +31,7 @@
                     android:focusableInTouchMode="true"
                     android:layout_height="match_parent"
                     android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
                     android:layout_marginTop="6dp"
                     android:layout_weight="1"
                     android:background="@drawable/shape_rect_white_4"
@@ -41,10 +42,11 @@
                     <EditText
                         android:id="@+id/editText"
                         android:layout_width="0dp"
-                        android:background="@color/white"
-                        android:layout_height="match_parent"
+                        android:background="@color/black_haze"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textColor="@color/colorPrimary" />
+                        android:inputType="number"
+                        android:textColor="@color/colorAccent" />
 
                     <ImageView
                         android:id="@+id/historyImg"
@@ -68,8 +70,8 @@
                     android:id="@+id/cleanImg"
                     android:layout_width="56dp"
                     android:layout_height="match_parent"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
                     android:src="@drawable/ic_clean" />
 
             </LinearLayout>

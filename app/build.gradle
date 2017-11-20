@@ -13,8 +13,8 @@ android {
         applicationId "com.supcoder.fundcrawler"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 1004
+        versionName "1.0.04"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -47,5 +47,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.3.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
     implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'org.jsoup:jsoup:1.11.1'
+    implementation 'com.alibaba:fastjson:1.1.65.android'
     implementation project(':fc-database')
 }
