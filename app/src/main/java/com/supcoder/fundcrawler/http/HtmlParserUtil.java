@@ -164,6 +164,6 @@ public class HtmlParserUtil {
         String js = new String(readInputStream(inputStream));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
                 js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 4);
-        return new ProcessMessege("888888", Double.parseDouble(js) / 100 + "", "");
+        return new ProcessMessege("888888", (Double.parseDouble(js) / 100 + "").substring(0,6) + "", "");
     }
 }
