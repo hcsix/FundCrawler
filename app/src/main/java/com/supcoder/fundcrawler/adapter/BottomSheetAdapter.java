@@ -22,6 +22,11 @@ public class BottomSheetAdapter extends BaseQuickAdapter<ProcessMessege, BaseVie
         super(R.layout.item_position_status, data);
     }
 
+    public void refresh(List<ProcessMessege> data){
+        mData = data;
+        notifyDataSetChanged();
+    }
+
     @Override
     protected void convert(BaseViewHolder helper, ProcessMessege item) {
 
