@@ -3,9 +3,11 @@ package com.supcoder.fundcrawler
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.support.design.widget.BottomSheetDialog
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -15,24 +17,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
+import com.bumptech.glide.Glide
 import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback
+import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
 import com.supcoder.fundcrawler.adapter.HistoryAdapter
 import com.supcoder.fundcrawler.adapter.ImageAdapter
 import com.supcoder.fundcrawler.entity.HistoryEntity
+import com.supcoder.fundcrawler.http.HtmlParserUtil
+import com.supcoder.fundcrawler.http.ProcessMessege
+import com.supcoder.fundcrawler.utils.ListDataSave
 import com.supcoder.fundcrawler.widget.ItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import me.foji.realmhelper.RealmHelper
 import kotlin.properties.Delegates
-import com.bumptech.glide.Glide
-import com.supcoder.fundcrawler.http.HtmlParserUtil
-import com.supcoder.fundcrawler.utils.ListDataSave
-import android.support.design.widget.BottomSheetDialog
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.DefaultItemAnimator
-import com.chad.library.adapter.base.BaseQuickAdapter
-import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
-import com.supcoder.fundcrawler.http.ProcessMessege
 
 
 open class MainActivity : AppCompatActivity() {
@@ -51,8 +49,17 @@ open class MainActivity : AppCompatActivity() {
 
     private var hisRecyclerView: RecyclerView? = null
 
-
+    /** sp保存list */
     private var dataSave: ListDataSave? = null
+
+    /** 是否正在加载数据 */
+    private var isLoading = false
+
+    /** 基金走势底部弹框 */
+    private var bottomDialog: BottomSheetDialog? = null
+    /** 基金走势底部弹框的RecyclerView */
+    private var bottomAdapter: BottomSheetAdapter? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +68,7 @@ open class MainActivity : AppCompatActivity() {
         initData()
         initRecyclerView()
         initPopupWindow()
+        initBottomDialog()
         initSwipeRefreshLayout()
         bindEvent()
     }
@@ -82,20 +90,26 @@ open class MainActivity : AppCompatActivity() {
     private fun initRecyclerView() {
 
         mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener { fundId ->
-            Log.e("12", fundId)
-            Thread(Runnable {
-                val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
+            Log.e("Kotlin", fundId)
+            if (!isLoading) {
+                Thread(Runnable {
+                    isLoading = true
+                    val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
 
-                for (item in mList) {
-                    Log.e("12", item.toString())
-                }
-
-                runOnUiThread {
-                    if (!isFinishing) {
-                        openBottom(mList)
+                    for (item in mList) {
+                        Log.e("12", item.toString())
                     }
-                }
-            }).start()
+                    runOnUiThread {
+                        if (!isFinishing) {
+                            isLoading = false
+                            openBottom(mList)
+                        }
+                    }
+                }).start()
+            } else {
+                showSnackBar("上一个弹窗还没加载完")
+            }
+
         })
         mAdapter.openLoadAnimation()
 
@@ -162,7 +176,6 @@ open class MainActivity : AppCompatActivity() {
         mHisAdapter = HistoryAdapter(mHisData, listener)
 
 
-
         hisRecyclerView!!.adapter = mHisAdapter
         hisRecyclerView!!.layoutManager = LinearLayoutManager(this@MainActivity)
         recyclerView.addItemDecoration(ItemDecoration())
@@ -190,6 +203,19 @@ open class MainActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+
+    private fun initBottomDialog() {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
+        recyclerView.itemAnimator = DefaultItemAnimator()
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val mList: List<ProcessMessege>? = null
+        bottomAdapter = BottomSheetAdapter(mList)
+        recyclerView.adapter = bottomAdapter
+        bottomDialog = BottomSheetDialog(this)
+        bottomDialog!!.setContentView(view)
     }
 
 
@@ -255,7 +281,6 @@ open class MainActivity : AppCompatActivity() {
             if (dataSave != null && mAdapter != null) {
                 dataSave!!.setDataList("fundList", mAdapter.data)
             }
-
             return
         }
         finish()
@@ -271,21 +296,19 @@ open class MainActivity : AppCompatActivity() {
 
     private fun showSnackBar(hint: String) {
         val snackBar = Snackbar.make(recyclerView, hint, 3000)
-        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.iron))
+        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent))
         snackBar.show()
     }
 
 
+    /**
+     * 展示BottomDialog
+     */
     private fun openBottom(list: List<ProcessMessege>) {
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
-        recyclerView.itemAnimator = DefaultItemAnimator()
-//        recyclerView.layoutManager = GridLayoutManager(this, 3)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = BottomSheetAdapter(list)
-        recyclerView.adapter = adapter
-        val dialog = BottomSheetDialog(this)
-        dialog.setContentView(view)
-        dialog.show()
+        if (bottomDialog != null) {
+            bottomDialog!!.dismiss()
+            bottomAdapter!!.refresh(list)
+            bottomDialog!!.show()
+        }
     }
 }
