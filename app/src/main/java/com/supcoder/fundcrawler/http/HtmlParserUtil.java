@@ -20,11 +20,11 @@ import org.jsoup.nodes.Element;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-
 public class HtmlParserUtil {
 
     public static void main(String[] args) {
-
+        System.out.println(HtmlParserUtil.getInstance().queryProcessInfo2("003095"));
+        System.out.println("0.0013".length());
     }
 
     private HtmlParserUtil() {
@@ -64,7 +64,7 @@ public class HtmlParserUtil {
         return list;
     }
 
-    public Map<String, String> getFluctuate(String fundCode) {
+    private Map<String, String> getFluctuate(String fundCode) {
         String url = "http://nufm3.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd="
                 + getStockCode(fundCode)
                 + "&sty=E1OQCPZT&st=z&sr=&p=&ps=&cb=&js=var%20js_favstock={favif:[%28x%29]}&token=8a36403b92724d5d1dd36dc40534aec5"
@@ -92,7 +92,7 @@ public class HtmlParserUtil {
 
     }
 
-    public String getStockCode(String fundCode) {
+    private String getStockCode(String fundCode) {
         String url = "http://fund.eastmoney.com/pingzhongdata/" + fundCode + ".js?v=" + getFormatTime();
         InputStream inputStream = getResourceFromUrl(url);
         String js = new String(readInputStream(inputStream));
@@ -100,7 +100,7 @@ public class HtmlParserUtil {
         return js;
     }
 
-    public String getFormatTime() {
+    private String getFormatTime() {
         SimpleDateFormat sf = new SimpleDateFormat("yyyyMMddHHmmss");
         return sf.format(new Date());
     }
@@ -108,9 +108,11 @@ public class HtmlParserUtil {
     /**
      *
      * @param urlStr
+     * @param fileName
+     * @param savePath
      * @throws IOException
      */
-    public InputStream getResourceFromUrl(String urlStr) {
+    private InputStream getResourceFromUrl(String urlStr) {
         URL url = null;
         try {
             url = new URL(urlStr);
@@ -142,9 +144,9 @@ public class HtmlParserUtil {
      * @return
      * @throws Exception
      */
-    public byte[] readInputStream(InputStream inStream) {
+    private byte[] readInputStream(InputStream inStream) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[512];
+        byte[] buffer = new byte[480];
         int len = 0;
         try {
             if ((len = inStream.read(buffer)) != -1) {
@@ -158,12 +160,36 @@ public class HtmlParserUtil {
     }
 
 
-    public ProcessMessege queryUpOrDown(String fundCode) {
+    private ProcessMessege queryUpOrDown(String fundCode) {
         String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=1511162059983";
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream));
+        String js = new String(readInputStream1(inputStream));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
                 js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 4);
-        return new ProcessMessege("888888", (Double.parseDouble(js) / 100 + "").substring(0,6) + "", "");
+        return new ProcessMessege("888888", (Double.parseDouble(js) / 100 + "").substring(0,6), "");
+    }
+
+
+    /**
+     * 从输入流中获取数据
+     *
+     * @param inStream
+     *            输入流
+     * @return
+     * @throws Exception
+     */
+    private byte[] readInputStream1(InputStream inStream) {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[128];
+        int len = 0;
+        try {
+            if ((len = inStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, len);
+            }
+            inStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 }
