@@ -165,8 +165,11 @@ public class HtmlParserUtil {
         InputStream inputStream = getResourceFromUrl(url);
         String js = new String(readInputStream1(inputStream));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
-                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 4);
-        return new ProcessMessege("888888", (Double.parseDouble(js) / 100 + "").substring(0,6), "");
+                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 5).replace("\"", "").trim(); //.replace(",", "");
+        return new ProcessMessege("888888",
+                Double.parseDouble(js) / 100 > 0 ? (Double.parseDouble(js) / 100 + "").substring(0, 6)
+                        : (Double.parseDouble(js) / 100 + "").substring(0, 7),
+                "");
     }
 
 
