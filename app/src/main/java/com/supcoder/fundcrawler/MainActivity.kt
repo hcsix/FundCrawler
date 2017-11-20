@@ -81,17 +81,19 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun initRecyclerView() {
 
-        mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener {  fundId ->
-            Log.e("12",fundId)
+        mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener { fundId ->
+            Log.e("12", fundId)
             Thread(Runnable {
                 val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
 
-                for (item in mList){
-                    Log.e("12",item.toString())
+                for (item in mList) {
+                    Log.e("12", item.toString())
                 }
 
                 runOnUiThread {
-                    openBottom(mList)
+                    if (!isFinishing) {
+                        openBottom(mList)
+                    }
                 }
             }).start()
         })
@@ -116,8 +118,6 @@ open class MainActivity : AppCompatActivity() {
                 hideKeyboard(editText)
             }
         })
-
-
 
 
     }
@@ -241,8 +241,6 @@ open class MainActivity : AppCompatActivity() {
                 }
             }).start()
         }
-
-
 
 
     }
