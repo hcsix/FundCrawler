@@ -1,4 +1,4 @@
-package com.util;
+package com.supcoder.fundcrawler.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import org.jsoup.nodes.Element;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
 
 public class HtmlParserUtil {
 
@@ -107,8 +108,6 @@ public class HtmlParserUtil {
     /**
      *
      * @param urlStr
-     * @param fileName
-     * @param savePath
      * @throws IOException
      */
     public InputStream getResourceFromUrl(String urlStr) {
