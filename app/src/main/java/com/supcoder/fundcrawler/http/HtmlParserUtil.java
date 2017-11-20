@@ -1,5 +1,4 @@
-package com.supcoder.fundcrawler.http;
-
+package com.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,7 +23,7 @@ import com.alibaba.fastjson.JSONObject;
 public class HtmlParserUtil {
 
     public static void main(String[] args) {
-        System.out.println(HtmlParserUtil.getInstance().queryProcessInfo2("002001"));
+
     }
 
     private HtmlParserUtil() {
@@ -52,13 +51,15 @@ public class HtmlParserUtil {
             Element childNodeList = doc.getElementById("position_shares");
 
             Map<String, String> map = getFluctuate(fundCode);
+            String[] text;
             for (int i = 1; i < 11; i++) {
-                String[] text = childNodeList.child(0).child(0).child(0).child(i).text().split(" ");
+                text = childNodeList.child(0).child(0).child(0).child(i).text().split(" ");
                 list.add(new ProcessMessege(text[0], text[1], map.get(text[0])));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        list.add(queryUpOrDown(fundCode));
         return list;
     }
 
@@ -77,8 +78,9 @@ public class HtmlParserUtil {
             JSONObject jsonObject = JSONObject
                     .parseObject(response.substring(response.indexOf("=") + 1, response.length() - 1));
             JSONArray jsonArray = jsonObject.getJSONArray("favif");
+            String[] string;
             for (int i = 0; i < jsonArray.size(); i++) {
-                String[] string = ((String) jsonArray.get(i)).split(",");
+                string = ((String) jsonArray.get(i)).split(",");
                 map.put(string[2], string[4]);
             }
         } catch (IOException e) {
@@ -103,6 +105,7 @@ public class HtmlParserUtil {
     }
 
     /**
+     *
      * @param urlStr
      * @param fileName
      * @param savePath
@@ -135,7 +138,8 @@ public class HtmlParserUtil {
     /**
      * 从输入流中获取数据
      *
-     * @param inStream 输入流
+     * @param inStream
+     *            输入流
      * @return
      * @throws Exception
      */
@@ -154,4 +158,13 @@ public class HtmlParserUtil {
         return outStream.toByteArray();
     }
 
+
+    public ProcessMessege queryUpOrDown(String fundCode) {
+        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=1511162059983";
+        InputStream inputStream = getResourceFromUrl(url);
+        String js = new String(readInputStream(inputStream));
+        js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
+                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 4);
+        return new ProcessMessege("888888", Double.parseDouble(js) / 100 + "", "");
+    }
 }
