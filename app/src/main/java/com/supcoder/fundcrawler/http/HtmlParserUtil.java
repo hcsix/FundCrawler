@@ -29,6 +29,8 @@ public class HtmlParserUtil {
 
     }
 
+    private static HtmlParserUtil htmlParserUtil = new HtmlParserUtil();
+
     public static HtmlParserUtil getInstance() {
         synchronized (HtmlParserUtil.class) {
             if (htmlParserUtil == null) {
@@ -118,6 +120,7 @@ public class HtmlParserUtil {
     }
 
     /**
+     *
      * @param urlStr
      * @param fileName
      * @param savePath
@@ -150,7 +153,8 @@ public class HtmlParserUtil {
     /**
      * 从输入流中获取数据
      *
-     * @param inStream 输入流
+     * @param inStream
+     *            输入流
      * @return
      * @throws Exception
      */
@@ -174,7 +178,7 @@ public class HtmlParserUtil {
         InputStream inputStream = getResourceFromUrl(url);
         String js = new String(readInputStream1(inputStream));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
-                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 5).replace("\"", "").trim(); // .replace(",",
+                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim(); // .replace(",",
         // "");
         return new ProcessMessege(Double.parseDouble(js) / 100 > 0 ? (Double.parseDouble(js) / 100 + "").substring(0, 6)
                 : (Double.parseDouble(js) / 100 + "").substring(0, 7), "");
@@ -183,7 +187,8 @@ public class HtmlParserUtil {
     /**
      * 从输入流中获取数据
      *
-     * @param inStream 输入流
+     * @param inStream
+     *            输入流
      * @return
      * @throws Exception
      */
@@ -202,4 +207,3 @@ public class HtmlParserUtil {
         return outStream.toByteArray();
     }
 }
-
