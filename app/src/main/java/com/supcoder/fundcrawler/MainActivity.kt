@@ -49,8 +49,17 @@ open class MainActivity : AppCompatActivity() {
 
     private var hisRecyclerView: RecyclerView? = null
 
-
+    /** sp保存list */
     private var dataSave: ListDataSave? = null
+
+    /** 是否正在加载数据 */
+    private var isLoading = false
+
+    /** 基金走势底部弹框 */
+    private var bottomDialog: BottomSheetDialog? = null
+    /** 基金走势底部弹框的RecyclerView */
+    private var bottomAdapter: BottomSheetAdapter? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +68,7 @@ open class MainActivity : AppCompatActivity() {
         initData()
         initRecyclerView()
         initPopupWindow()
+        initBottomDialog()
         initSwipeRefreshLayout()
         bindEvent()
     }
@@ -79,23 +89,36 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun initRecyclerView() {
 
-        mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener { fundId ->
-            Log.e("12", fundId)
-            Thread(Runnable {
-                val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
-
-                for (item in mList) {
-                    Log.e("12", item.toString())
-                }
-
-                runOnUiThread {
-                    if (!isFinishing) {
-                        openBottom(mList)
-                    }
-                }
-            }).start()
-        })
+        mAdapter = ImageAdapter(mData)
         mAdapter.openLoadAnimation()
+
+        mAdapter.setOnItemChildClickListener { adapter, view, position ->
+            Log.e("Kotlin", "响应了子控件点击事件")
+            if (adapter.data.size > position) {
+                val fundId = adapter.data[position] as String
+                Log.e("Kotlin", fundId)
+                if (!isLoading) {
+                    Thread(Runnable {
+                        isLoading = true
+                        val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
+
+                        for (item in mList) {
+                            Log.e("12", item.toString())
+                        }
+                        runOnUiThread {
+                            if (!isFinishing) {
+                                isLoading = false
+                                openBottom(mList)
+                            }
+                        }
+                    }).start()
+                } else {
+                    showSnackBar("上一个弹窗还没加载完")
+                }
+            }
+
+        }
+
 
         val itemDragAndSwipeCallback = ItemDragAndSwipeCallback(mAdapter)
         val itemTouchHelper = ItemTouchHelper(itemDragAndSwipeCallback)
@@ -116,6 +139,8 @@ open class MainActivity : AppCompatActivity() {
                 hideKeyboard(editText)
             }
         })
+
+
 
 
     }
@@ -155,7 +180,10 @@ open class MainActivity : AppCompatActivity() {
             }
         }
 
+
+
         mHisAdapter = HistoryAdapter(mHisData, listener)
+
 
         hisRecyclerView!!.adapter = mHisAdapter
         hisRecyclerView!!.layoutManager = LinearLayoutManager(this@MainActivity)
@@ -187,6 +215,19 @@ open class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun initBottomDialog() {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
+        recyclerView.itemAnimator = DefaultItemAnimator()
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val mList: List<ProcessMessege>? = null
+        bottomAdapter = BottomSheetAdapter(mList)
+        recyclerView.adapter = bottomAdapter
+        bottomDialog = BottomSheetDialog(this)
+        bottomDialog!!.setContentView(view)
+    }
+
+
     private fun bindEvent() {
 
         addImg.setOnClickListener {
@@ -197,6 +238,7 @@ open class MainActivity : AppCompatActivity() {
                 } else {
                     mAdapter.addData(0, editTextStr)
                     recyclerView.scrollToPosition(0)
+
                     mRealmHelper.use {
                         executeTransactionAsync({ realm ->
                             val hisEntity = HistoryEntity()
@@ -244,7 +286,8 @@ open class MainActivity : AppCompatActivity() {
         if (current - mLastClickBack > 3 * 1000) {
             mLastClickBack = System.currentTimeMillis()
             showSnackBar("再按一次返回键退出程序")
-            if (dataSave != null) {
+
+            if (dataSave != null && mAdapter != null) {
                 dataSave!!.setDataList("fundList", mAdapter.data)
             }
             return
@@ -262,21 +305,19 @@ open class MainActivity : AppCompatActivity() {
 
     private fun showSnackBar(hint: String) {
         val snackBar = Snackbar.make(recyclerView, hint, 3000)
-        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.iron))
+        snackBar.view.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent))
         snackBar.show()
     }
 
 
+    /**
+     * 展示BottomDialog
+     */
     private fun openBottom(list: List<ProcessMessege>) {
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
-        recyclerView.itemAnimator = DefaultItemAnimator()
-//        recyclerView.layoutManager = GridLayoutManager(this, 3)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = BottomSheetAdapter(list)
-        recyclerView.adapter = adapter
-        val dialog = BottomSheetDialog(this)
-        dialog.setContentView(view)
-        dialog.show()
+        if (bottomDialog != null) {
+            bottomDialog!!.dismiss()
+            bottomAdapter!!.refresh(list)
+            bottomDialog!!.show()
+        }
     }
 }

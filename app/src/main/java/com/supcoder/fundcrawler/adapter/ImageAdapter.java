@@ -20,11 +20,9 @@ import java.util.List;
 
 public class ImageAdapter extends BaseItemDraggableAdapter<String, BaseViewHolder> {
 
-    private OnFundIdListener onFundIdListener;
 
-    public ImageAdapter(List data, OnFundIdListener onFundIdListener) {
+    public ImageAdapter(List data) {
         super(R.layout.item_img, data);
-        this.onFundIdListener = onFundIdListener;
     }
 
     @Override
@@ -32,17 +30,8 @@ public class ImageAdapter extends BaseItemDraggableAdapter<String, BaseViewHolde
         Glide.with(mContext)
                 .load(getUrl(item))
                 .into((ImageView) helper.getView(R.id.fundImg));
+        helper.addOnClickListener(R.id.fundImg);
 
-        helper.getView(R.id.fundImg).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!NoDoubleClickUtils.isDoubleClick()){
-                    if (onFundIdListener!=null){
-                        onFundIdListener.onFundId(item);
-                    }
-                }
-            }
-        });
     }
 
 
@@ -51,8 +40,5 @@ public class ImageAdapter extends BaseItemDraggableAdapter<String, BaseViewHolde
     }
 
 
-    public interface OnFundIdListener {
-        void onFundId(String fundId);
-    }
 }
 

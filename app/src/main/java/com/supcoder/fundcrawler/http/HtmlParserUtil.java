@@ -3,6 +3,7 @@ package com.supcoder.fundcrawler.http;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,12 +21,7 @@ import org.jsoup.nodes.Element;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-
 public class HtmlParserUtil {
-
-    public static void main(String[] args) {
-
-    }
 
     private HtmlParserUtil() {
 
@@ -42,9 +38,22 @@ public class HtmlParserUtil {
         }
     }
 
+    /**
+     * 提供精确的乘法运算。
+     *
+     * @param v1 被乘数
+     * @param v2 乘数
+     * @return 两个参数的积
+     */
+    public double mul(String v1, String v2) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal(v2);
+        return b1.multiply(b2).doubleValue();
+    }
+
     public List<ProcessMessege> queryProcessInfo2(String fundCode) {
         String url = "http://fund.eastmoney.com/" + fundCode + ".html?spm=aladin";
-        Document doc;
+        Document doc = null;
         List<ProcessMessege> list = new ArrayList<ProcessMessege>();
         try {
             doc = Jsoup.connect(url).get();
@@ -60,11 +69,21 @@ public class HtmlParserUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        list.add(queryUpOrDown(fundCode));
+        String dataItem02 = doc.getElementsByClass("dataItem02").text();
+
+        String date = dataItem02.substring(dataItem02.indexOf("(") + 1, dataItem02.indexOf(")"));
+
+        if (date.equals(getFormatTime("yyyy-MM-dd"))) {
+            dataItem02 = dataItem02.split(" ")[2].substring(6);
+            list.add(new ProcessMessege(dataItem02, ""));
+        } else {
+            list.add(queryUpOrDown(fundCode));
+        }
+
         return list;
     }
 
-    public Map<String, String> getFluctuate(String fundCode) {
+    private Map<String, String> getFluctuate(String fundCode) {
         String url = "http://nufm3.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?type=CT&cmd="
                 + getStockCode(fundCode)
                 + "&sty=E1OQCPZT&st=z&sr=&p=&ps=&cb=&js=var%20js_favstock={favif:[%28x%29]}&token=8a36403b92724d5d1dd36dc40534aec5"
@@ -92,25 +111,31 @@ public class HtmlParserUtil {
 
     }
 
-    public String getStockCode(String fundCode) {
+    private String getStockCode(String fundCode) {
         String url = "http://fund.eastmoney.com/pingzhongdata/" + fundCode + ".js?v=" + getFormatTime();
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream));
+        String js = new String(readInputStream(inputStream, 512));
         js = js.substring(js.indexOf("stockCodes=[") + 12, js.indexOf("]")).replaceAll("\"", "");
         return js;
     }
 
-    public String getFormatTime() {
+    private String getFormatTime() {
         SimpleDateFormat sf = new SimpleDateFormat("yyyyMMddHHmmss");
         return sf.format(new Date());
     }
 
+    private String getFormatTime(String pattern) {
+        SimpleDateFormat sf = new SimpleDateFormat(pattern);
+        return sf.format(new Date());
+    }
+
     /**
-     *
      * @param urlStr
+     * @param fileName
+     * @param savePath
      * @throws IOException
      */
-    public InputStream getResourceFromUrl(String urlStr) {
+    private InputStream getResourceFromUrl(String urlStr) {
         URL url = null;
         try {
             url = new URL(urlStr);
@@ -134,17 +159,31 @@ public class HtmlParserUtil {
 
     }
 
+    private ProcessMessege queryUpOrDown(String fundCode) {
+        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=" + new Date().getTime();
+        InputStream inputStream = getResourceFromUrl(url);
+        String js = new String(readInputStream(inputStream, 170));
+        js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
+                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim();
+        return new ProcessMessege(div(js) > 0 ? (div(js) + "") : (div(js) + ""), "");
+    }
+
+    private double div(String v1) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal("100.0");
+        return b1.divide(b2, 4, BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
+
     /**
      * 从输入流中获取数据
      *
-     * @param inStream
-     *            输入流
+     * @param inStream 输入流
      * @return
      * @throws Exception
      */
-    public byte[] readInputStream(InputStream inStream) {
+    private byte[] readInputStream(InputStream inStream, int size) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[512];
+        byte[] buffer = new byte[size];
         int len = 0;
         try {
             if ((len = inStream.read(buffer)) != -1) {
@@ -155,15 +194,5 @@ public class HtmlParserUtil {
             e.printStackTrace();
         }
         return outStream.toByteArray();
-    }
-
-
-    public ProcessMessege queryUpOrDown(String fundCode) {
-        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=1511162059983";
-        InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream));
-        js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
-                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 4);
-        return new ProcessMessege("888888", Double.parseDouble(js) / 100 + "", "");
     }
 }

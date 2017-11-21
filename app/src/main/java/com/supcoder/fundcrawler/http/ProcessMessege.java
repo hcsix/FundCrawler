@@ -1,57 +1,57 @@
 package com.supcoder.fundcrawler.http;
 
 public class ProcessMessege {
-	private String processName;
+    private String processName = "888888";
 
-	private String processScale;
+    private String processScale;
 
-	private String fluctuate;
+    private String fluctuate;
 
-	public String getProcessName() {
-		return processName;
-	}
+    public ProcessMessege() {
+        super();
+    }
 
-	public void setProcessName(String processName) {
-		this.processName = processName;
-	}
+    public ProcessMessege(String processName, String processScale, String fluctuate) {
+        super();
+        this.processName = processName;
+        this.processScale = processScale;
+        this.fluctuate = fluctuate;
+    }
 
-	public String getProcessScale() {
-		return processScale;
-	}
+    public ProcessMessege(String processScale, String fluctuate) {
+        super();
+        this.processScale = processScale;
+        this.fluctuate = fluctuate;
+    }
 
-	public void setProcessScale(String processScale) {
-		this.processScale = processScale;
-	}
+    public String getProcessName() {
+        return processName;
+    }
 
-	public String getFluctuate() {
-		return fluctuate;
-	}
+    public void setProcessName(String processName) {
+        this.processName = processName;
+    }
 
-	public void setFluctuate(String fluctuate) {
-		this.fluctuate = fluctuate;
-	}
+    public String getProcessScale() {
+        return processScale;
+    }
 
-	public ProcessMessege() {
-		super();
-	}
+    public void setProcessScale(String processScale) {
+        this.processScale = processScale;
+    }
 
-	public ProcessMessege(String processName, String processScale, String fluctuate) {
-		super();
-		this.processName = processName;
-		this.processScale = processScale;
-		this.fluctuate = fluctuate;
-	}
+    public String getFluctuate() {
+        return fluctuate;
+    }
 
-	public ProcessMessege(String processName, String processScale) {
-		super();
-		this.processName = processName;
-		this.processScale = processScale;
-	}
+    public void setFluctuate(String fluctuate) {
+        this.fluctuate = fluctuate;
+    }
 
-	@Override
-	public String toString() {
-		return "ProcessMessege [processName=" + processName + ", processScale=" + processScale + ", fluctuate="
-				+ fluctuate + "]";
-	}
+    @Override
+    public String toString() {
+        return "ProcessMessege [processName=" + processName + ", processScale=" + processScale + ", fluctuate="
+                + fluctuate + "]";
+    }
 
 }
