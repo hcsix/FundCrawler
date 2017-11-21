@@ -3,9 +3,11 @@ package com.supcoder.fundcrawler
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.support.design.widget.BottomSheetDialog
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -15,24 +17,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupWindow
+import com.bumptech.glide.Glide
 import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback
+import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
 import com.supcoder.fundcrawler.adapter.HistoryAdapter
 import com.supcoder.fundcrawler.adapter.ImageAdapter
 import com.supcoder.fundcrawler.entity.HistoryEntity
+import com.supcoder.fundcrawler.http.HtmlParserUtil
+import com.supcoder.fundcrawler.http.ProcessMessege
+import com.supcoder.fundcrawler.utils.ListDataSave
 import com.supcoder.fundcrawler.widget.ItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import me.foji.realmhelper.RealmHelper
 import kotlin.properties.Delegates
-import com.bumptech.glide.Glide
-import com.supcoder.fundcrawler.http.HtmlParserUtil
-import com.supcoder.fundcrawler.utils.ListDataSave
-import android.support.design.widget.BottomSheetDialog
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.DefaultItemAnimator
-import com.chad.library.adapter.base.BaseQuickAdapter
-import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
-import com.supcoder.fundcrawler.http.ProcessMessege
 
 
 open class MainActivity : AppCompatActivity() {
@@ -157,11 +155,7 @@ open class MainActivity : AppCompatActivity() {
             }
         }
 
-
-
         mHisAdapter = HistoryAdapter(mHisData, listener)
-
-
 
         hisRecyclerView!!.adapter = mHisAdapter
         hisRecyclerView!!.layoutManager = LinearLayoutManager(this@MainActivity)
@@ -203,7 +197,6 @@ open class MainActivity : AppCompatActivity() {
                 } else {
                     mAdapter.addData(0, editTextStr)
                     recyclerView.scrollToPosition(0)
-
                     mRealmHelper.use {
                         executeTransactionAsync({ realm ->
                             val hisEntity = HistoryEntity()
@@ -251,11 +244,9 @@ open class MainActivity : AppCompatActivity() {
         if (current - mLastClickBack > 3 * 1000) {
             mLastClickBack = System.currentTimeMillis()
             showSnackBar("再按一次返回键退出程序")
-
-            if (dataSave != null && mAdapter != null) {
+            if (dataSave != null) {
                 dataSave!!.setDataList("fundList", mAdapter.data)
             }
-
             return
         }
         finish()

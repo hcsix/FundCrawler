@@ -4,4 +4,7 @@
 
 
     <string name="url">http://j4.dfcfw.com/charts/pic6/%s.png</string>
+    
+    <string name="ensure">确定</string>
+    
 </resources>

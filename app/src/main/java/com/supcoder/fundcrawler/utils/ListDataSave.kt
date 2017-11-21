@@ -1,8 +1,8 @@
 package com.supcoder.fundcrawler.utils
 
-import com.google.gson.Gson
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 
@@ -28,14 +28,12 @@ class ListDataSave(mContext: Context, preferenceName: String) {
     fun <T> setDataList(tag: String, datalist: List<T>?) {
         if (null == datalist || datalist.size <= 0)
             return
-
         val gson = Gson()
         //转换成json数据，再保存    
         val strJson = gson.toJson(datalist)
         editor.clear()
         editor.putString(tag, strJson)
         editor.commit()
-
     }
 
     /**

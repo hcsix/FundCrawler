@@ -15,6 +15,7 @@ class SApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Realm.init(this)
-        Realm.setDefaultConfiguration(RealmConfiguration.Builder().name("fund").schemaVersion(1).build())
+        Realm.setDefaultConfiguration(RealmConfiguration.Builder().name("fund")
+                .schemaVersion(1).build())
     }
 }

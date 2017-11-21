@@ -7,6 +7,7 @@ import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseItemDraggableAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.supcoder.fundcrawler.R;
+import com.supcoder.fundcrawler.utils.NoDoubleClickUtils;
 
 import java.util.List;
 
@@ -35,9 +36,10 @@ public class ImageAdapter extends BaseItemDraggableAdapter<String, BaseViewHolde
         helper.getView(R.id.fundImg).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if (onFundIdListener!=null){
-                    onFundIdListener.onFundId(item);
+                if (!NoDoubleClickUtils.isDoubleClick()){
+                    if (onFundIdListener!=null){
+                        onFundIdListener.onFundId(item);
+                    }
                 }
             }
         });
