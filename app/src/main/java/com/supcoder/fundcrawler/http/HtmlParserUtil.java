@@ -29,8 +29,6 @@ public class HtmlParserUtil {
 
     }
 
-    private static HtmlParserUtil htmlParserUtil = new HtmlParserUtil();
-
     public static HtmlParserUtil getInstance() {
         synchronized (HtmlParserUtil.class) {
             if (htmlParserUtil == null) {
@@ -43,7 +41,6 @@ public class HtmlParserUtil {
     public List<ProcessMessege> queryProcessInfo2(String fundCode) {
         String url = "http://fund.eastmoney.com/" + fundCode + ".html?spm=aladin";
         Document doc = null;
-        ;
         List<ProcessMessege> list = new ArrayList<ProcessMessege>();
         try {
             doc = Jsoup.connect(url).get();
@@ -104,7 +101,7 @@ public class HtmlParserUtil {
     private String getStockCode(String fundCode) {
         String url = "http://fund.eastmoney.com/pingzhongdata/" + fundCode + ".js?v=" + getFormatTime();
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream));
+        String js = new String(readInputStream(inputStream, 256));
         js = js.substring(js.indexOf("stockCodes=[") + 12, js.indexOf("]")).replaceAll("\"", "");
         return js;
     }
@@ -120,7 +117,6 @@ public class HtmlParserUtil {
     }
 
     /**
-     *
      * @param urlStr
      * @param fileName
      * @param savePath
@@ -150,33 +146,11 @@ public class HtmlParserUtil {
 
     }
 
-    /**
-     * 从输入流中获取数据
-     *
-     * @param inStream
-     *            输入流
-     * @return
-     * @throws Exception
-     */
-    private byte[] readInputStream(InputStream inStream) {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[480];
-        int len = 0;
-        try {
-            if ((len = inStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, len);
-            }
-            inStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return outStream.toByteArray();
-    }
 
     private ProcessMessege queryUpOrDown(String fundCode) {
         String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=1511162059983";
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream1(inputStream));
+        String js = new String(readInputStream(inputStream, 128));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
                 js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim(); // .replace(",",
         // "");
@@ -187,14 +161,13 @@ public class HtmlParserUtil {
     /**
      * 从输入流中获取数据
      *
-     * @param inStream
-     *            输入流
+     * @param inStream 输入流
      * @return
      * @throws Exception
      */
-    private byte[] readInputStream1(InputStream inStream) {
+    private byte[] readInputStream(InputStream inStream, int size) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[128];
+        byte[] buffer = new byte[size];
         int len = 0;
         try {
             if ((len = inStream.read(buffer)) != -1) {
