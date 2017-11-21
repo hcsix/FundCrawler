@@ -22,12 +22,11 @@ import com.alibaba.fastjson.JSONObject;
 
 public class HtmlParserUtil {
 
-
-    private static HtmlParserUtil htmlParserUtil = new HtmlParserUtil();
-
     private HtmlParserUtil() {
 
     }
+
+    private static HtmlParserUtil htmlParserUtil = new HtmlParserUtil();
 
     public static HtmlParserUtil getInstance() {
         synchronized (HtmlParserUtil.class) {
@@ -101,7 +100,7 @@ public class HtmlParserUtil {
     private String getStockCode(String fundCode) {
         String url = "http://fund.eastmoney.com/pingzhongdata/" + fundCode + ".js?v=" + getFormatTime();
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream, 256));
+        String js = new String(readInputStream(inputStream, 512));
         js = js.substring(js.indexOf("stockCodes=[") + 12, js.indexOf("]")).replaceAll("\"", "");
         return js;
     }
@@ -117,6 +116,7 @@ public class HtmlParserUtil {
     }
 
     /**
+     *
      * @param urlStr
      * @param fileName
      * @param savePath
@@ -146,22 +146,26 @@ public class HtmlParserUtil {
 
     }
 
-
     private ProcessMessege queryUpOrDown(String fundCode) {
-        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt="+new Date().getTime();
+        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=" + new Date().getTime();
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream, 128));
+        String js = new String(readInputStream(inputStream, 256));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
-                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim(); // .replace(",",
-        // "");
-        return new ProcessMessege(Double.parseDouble(js) / 100 > 0 ? (Double.parseDouble(js) / 100 + "").substring(0, 6)
-                : (Double.parseDouble(js) / 100 + "").substring(0, 7), "");
+                js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim();
+        return new ProcessMessege(div(js) > 0 ? (div(js) + "") : (div(js) + ""), "");
+    }
+
+    private double div(String v1) {
+        BigDecimal b1 = new BigDecimal(v1);
+        BigDecimal b2 = new BigDecimal("100.0");
+        return b1.divide(b2, 4, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 
     /**
      * 从输入流中获取数据
      *
-     * @param inStream 输入流
+     * @param inStream
+     *            输入流
      * @return
      * @throws Exception
      */
