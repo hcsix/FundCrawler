@@ -89,29 +89,36 @@ open class MainActivity : AppCompatActivity() {
      */
     private fun initRecyclerView() {
 
-        mAdapter = ImageAdapter(mData, ImageAdapter.OnFundIdListener { fundId ->
-            Log.e("Kotlin", fundId)
-            if (!isLoading) {
-                Thread(Runnable {
-                    isLoading = true
-                    val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
+        mAdapter = ImageAdapter(mData)
+        mAdapter.openLoadAnimation()
 
-                    for (item in mList) {
-                        Log.e("12", item.toString())
-                    }
-                    runOnUiThread {
-                        if (!isFinishing) {
-                            isLoading = false
-                            openBottom(mList)
+        mAdapter.setOnItemChildClickListener { adapter, view, position ->
+            Log.e("Kotlin", "响应了子控件点击事件")
+            if (adapter.data.size > position) {
+                val fundId = adapter.data[position] as String
+                Log.e("Kotlin", fundId)
+                if (!isLoading) {
+                    Thread(Runnable {
+                        isLoading = true
+                        val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
+
+                        for (item in mList) {
+                            Log.e("12", item.toString())
                         }
-                    }
-                }).start()
-            } else {
-                showSnackBar("上一个弹窗还没加载完")
+                        runOnUiThread {
+                            if (!isFinishing) {
+                                isLoading = false
+                                openBottom(mList)
+                            }
+                        }
+                    }).start()
+                } else {
+                    showSnackBar("上一个弹窗还没加载完")
+                }
             }
 
-        })
-        mAdapter.openLoadAnimation()
+        }
+
 
         val itemDragAndSwipeCallback = ItemDragAndSwipeCallback(mAdapter)
         val itemTouchHelper = ItemTouchHelper(itemDragAndSwipeCallback)
@@ -132,6 +139,8 @@ open class MainActivity : AppCompatActivity() {
                 hideKeyboard(editText)
             }
         })
+
+
 
 
     }
