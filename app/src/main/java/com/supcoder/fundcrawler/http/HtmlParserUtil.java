@@ -149,7 +149,7 @@ public class HtmlParserUtil {
     private ProcessMessege queryUpOrDown(String fundCode) {
         String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=" + new Date().getTime();
         InputStream inputStream = getResourceFromUrl(url);
-        String js = new String(readInputStream(inputStream, 256));
+        String js = new String(readInputStream(inputStream, 170));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
                 js.indexOf("gszzl\":\"") + "gszzl\":\"".length() + 6).replace("\"", "").replace(",", "").trim();
         return new ProcessMessege(div(js) > 0 ? (div(js) + "") : (div(js) + ""), "");
