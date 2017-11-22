@@ -20,7 +20,7 @@ import java.util.List;
 
 public class BottomSheetAdapter extends BaseQuickAdapter<ProcessMessege, BaseViewHolder> {
     public BottomSheetAdapter(@Nullable List<ProcessMessege> data) {
-        super(R.layout.dialog_bottom, data);
+        super(R.layout.item_position_status, data);
     }
 
     public void refresh(List<ProcessMessege> data) {
