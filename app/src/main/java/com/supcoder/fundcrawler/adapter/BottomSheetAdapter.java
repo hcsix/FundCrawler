@@ -6,6 +6,7 @@ import android.support.v4.content.ContextCompat;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.supcoder.fundcrawler.R;
+import com.supcoder.fundcrawler.http.HtmlParserUtil;
 import com.supcoder.fundcrawler.http.ProcessMessege;
 
 import java.util.List;
@@ -19,10 +20,10 @@ import java.util.List;
 
 public class BottomSheetAdapter extends BaseQuickAdapter<ProcessMessege, BaseViewHolder> {
     public BottomSheetAdapter(@Nullable List<ProcessMessege> data) {
-        super(R.layout.item_position_status, data);
+        super(R.layout.dialog_bottom, data);
     }
 
-    public void refresh(List<ProcessMessege> data){
+    public void refresh(List<ProcessMessege> data) {
         mData = data;
         notifyDataSetChanged();
     }
@@ -30,13 +31,23 @@ public class BottomSheetAdapter extends BaseQuickAdapter<ProcessMessege, BaseVie
     @Override
     protected void convert(BaseViewHolder helper, ProcessMessege item) {
 
-        helper.setText(R.id.nameTv, item.getProcessName())
-                .setText(R.id.cczbTv, item.getProcessScale())
-                .setText(R.id.zdfTv, item.getFluctuate())
-                .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
-                        item.getFluctuate().contains("-") ?
-                                R.color.green : R.color.red)
-                )
-        ;
+        if (item.getProcessName().equals("888888")) {
+            helper.setText(R.id.nameTv, item.getProcessName())
+                    .setText(R.id.cczbTv, item.getProcessScale())
+                    .setText(R.id.zdfTv, HtmlParserUtil.getInstance().mul("1000", item.getProcessScale()) + "")
+                    .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
+                            item.getFluctuate().contains("-") ?
+                                    R.color.green : R.color.red)
+                    );
+        } else {
+
+            helper.setText(R.id.nameTv, item.getProcessName())
+                    .setText(R.id.cczbTv, item.getProcessScale())
+                    .setText(R.id.zdfTv, item.getFluctuate())
+                    .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
+                            item.getFluctuate().contains("-") ?
+                                    R.color.green : R.color.red)
+                    );
+        }
     }
 }
