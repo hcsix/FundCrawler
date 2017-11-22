@@ -131,8 +131,6 @@ public class HtmlParserUtil {
 
     /**
      * @param urlStr
-     * @param fileName
-     * @param savePath
      * @throws IOException
      */
     private InputStream getResourceFromUrl(String urlStr) {

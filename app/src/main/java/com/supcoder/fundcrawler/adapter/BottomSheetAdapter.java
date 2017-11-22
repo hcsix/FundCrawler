@@ -31,23 +31,13 @@ public class BottomSheetAdapter extends BaseQuickAdapter<ProcessMessege, BaseVie
     @Override
     protected void convert(BaseViewHolder helper, ProcessMessege item) {
 
-        if (item.getProcessName().equals("888888")) {
-            helper.setText(R.id.nameTv, item.getProcessName())
-                    .setText(R.id.cczbTv, item.getProcessScale())
-                    .setText(R.id.zdfTv, HtmlParserUtil.getInstance().mul("1000", item.getProcessScale()) + "")
-                    .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
-                            item.getFluctuate().contains("-") ?
-                                    R.color.green : R.color.red)
-                    );
-        } else {
 
-            helper.setText(R.id.nameTv, item.getProcessName())
-                    .setText(R.id.cczbTv, item.getProcessScale())
-                    .setText(R.id.zdfTv, item.getFluctuate())
-                    .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
-                            item.getFluctuate().contains("-") ?
-                                    R.color.green : R.color.red)
-                    );
-        }
+        helper.setText(R.id.nameTv, item.getProcessName())
+                .setText(R.id.cczbTv, item.getProcessScale())
+                .setText(R.id.zdfTv, item.getFluctuate())
+                .setTextColor(R.id.zdfTv, ContextCompat.getColor(mContext,
+                        item.getFluctuate().contains("-") ?
+                                R.color.green : R.color.red)
+                );
     }
 }

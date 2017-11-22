@@ -1,5 +1,7 @@
 package com.supcoder.fundcrawler.http;
 
+import android.text.TextUtils;
+
 public class ProcessMessege {
     private String processName = "888888";
 
@@ -33,7 +35,7 @@ public class ProcessMessege {
     }
 
     public String getProcessScale() {
-        return processScale;
+        return TextUtils.isEmpty(processScale) ? "0" : processScale;
     }
 
     public void setProcessScale(String processScale) {

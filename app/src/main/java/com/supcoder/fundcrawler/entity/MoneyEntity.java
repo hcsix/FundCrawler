@@ -10,10 +10,12 @@ import io.realm.annotations.PrimaryKey;
  * @date 2017/11/14
  */
 
-public class HistoryEntity extends RealmObject {
+public class MoneyEntity extends RealmObject {
 
     @PrimaryKey
     private String fundId;
+
+    private String money;
 
 
     public String getFundId() {
@@ -22,5 +24,13 @@ public class HistoryEntity extends RealmObject {
 
     public void setFundId(String fundId) {
         this.fundId = fundId;
+    }
+
+    public String getMoney() {
+        return money;
+    }
+
+    public void setMoney(String money) {
+        this.money = money;
     }
 }

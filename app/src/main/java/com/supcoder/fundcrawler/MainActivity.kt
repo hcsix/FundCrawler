@@ -11,11 +11,15 @@ import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.text.Editable
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
 import android.widget.PopupWindow
 import com.bumptech.glide.Glide
 import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback
@@ -23,6 +27,7 @@ import com.supcoder.fundcrawler.adapter.BottomSheetAdapter
 import com.supcoder.fundcrawler.adapter.HistoryAdapter
 import com.supcoder.fundcrawler.adapter.ImageAdapter
 import com.supcoder.fundcrawler.entity.HistoryEntity
+import com.supcoder.fundcrawler.entity.MoneyEntity
 import com.supcoder.fundcrawler.http.HtmlParserUtil
 import com.supcoder.fundcrawler.http.ProcessMessege
 import com.supcoder.fundcrawler.utils.ListDataSave
@@ -59,6 +64,8 @@ open class MainActivity : AppCompatActivity() {
     private var bottomDialog: BottomSheetDialog? = null
     /** 基金走势底部弹框的RecyclerView */
     private var bottomAdapter: BottomSheetAdapter? = null
+    private var moneyEt: EditText? = null
+    private var saveBtn: Button? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,14 +108,10 @@ open class MainActivity : AppCompatActivity() {
                     Thread(Runnable {
                         isLoading = true
                         val mList = HtmlParserUtil.getInstance().queryProcessInfo2(fundId)
-
-                        for (item in mList) {
-                            Log.e("12", item.toString())
-                        }
                         runOnUiThread {
                             if (!isFinishing) {
                                 isLoading = false
-                                openBottom(mList)
+                                openBottom(mList, fundId)
                             }
                         }
                     }).start()
@@ -141,8 +144,6 @@ open class MainActivity : AppCompatActivity() {
         })
 
 
-
-
     }
 
 
@@ -157,32 +158,33 @@ open class MainActivity : AppCompatActivity() {
         hisRecyclerView = mPopupWindow!!.contentView.findViewById(R.id.hisRecyclerView)
 
 
-        val listener = object : HistoryAdapter.OnHistoryListener {
-            override fun onDelete(fund: HistoryEntity?) {
-                mRealmHelper.use {
-                    val hisRecord = where(HistoryEntity::class.java)
-                            .equalTo(
-                                    "fundId",
-                                    fund!!.fundId
-                            ).findAll()
-                    executeTransaction {
-                        hisRecord!!.deleteAllFromRealm()
-                        refreshHis()
-                    }
+        val listener = HistoryAdapter.OnHistoryListener { fund ->
+            mRealmHelper.use {
+                val hisRecord = where(HistoryEntity::class.java)
+                        .equalTo("fundId",
+                                fund!!.fundId
+                        ).findAll()
+                executeTransaction {
+                    hisRecord!!.deleteAllFromRealm()
+                    refreshHis()
                 }
-            }
-
-            override fun onFund(fundId: String?) {
-                editText.setText(fundId)
-                editText.setSelection(fundId!!.length)
-                hideKeyboard(editText)
-                mPopupWindow!!.dismiss()
             }
         }
 
 
 
         mHisAdapter = HistoryAdapter(mHisData, listener)
+
+        mHisAdapter.setOnItemClickListener { adapter, view, position ->
+
+            val hisEntity = adapter.data[position] as HistoryEntity
+            val fundId = hisEntity.fundId
+            editText.setText(fundId)
+            editText.setSelection(fundId.length)
+            hideKeyboard(editText)
+            mPopupWindow!!.dismiss()
+
+        }
 
 
         hisRecyclerView!!.adapter = mHisAdapter
@@ -223,6 +225,10 @@ open class MainActivity : AppCompatActivity() {
         val mList: List<ProcessMessege>? = null
         bottomAdapter = BottomSheetAdapter(mList)
         recyclerView.adapter = bottomAdapter
+
+        moneyEt = view.findViewById(R.id.moneyEt)
+        saveBtn = view.findViewById(R.id.saveBtn)
+
         bottomDialog = BottomSheetDialog(this)
         bottomDialog!!.setContentView(view)
     }
@@ -313,11 +319,69 @@ open class MainActivity : AppCompatActivity() {
     /**
      * 展示BottomDialog
      */
-    private fun openBottom(list: List<ProcessMessege>) {
+    private fun openBottom(list: List<ProcessMessege>, fundId: String) {
         if (bottomDialog != null) {
             bottomDialog!!.dismiss()
-            bottomAdapter!!.refresh(list)
+
+            val money = getFundMoney(fundId)
+            moneyEt!!.setText(money)
+            moneyEt!!.setSelection(money.length)
+
+
+            saveBtn!!.setOnClickListener {
+                if (!TextUtils.isEmpty(moneyEt!!.text.toString())) {
+                    saveMoney(fundId, moneyEt!!.text.toString())
+                    refreshBottomDialog(list, fundId, moneyEt!!.text.toString())
+                } else {
+                    showSnackBar("输入金额不能为空")
+                }
+            }
+            refreshBottomDialog(list, fundId, money)
             bottomDialog!!.show()
+        }
+    }
+
+
+    private fun refreshBottomDialog(list: List<ProcessMessege>, fundId: String, money: String) {
+        if (!TextUtils.isEmpty(getFundMoney(fundId))) {
+            for (bean in list) {
+                if (bean.processName == "888888") {
+                    Log.e("888888", bean.toString())
+                    bean.fluctuate = HtmlParserUtil.getInstance().mul(money, bean.processScale).toString()
+//                    bean.fluctuate = money
+                }
+            }
+        }
+        bottomAdapter!!.refresh(list)
+    }
+
+
+    private fun getFundMoney(fundId: String): String {
+        var moneyEntity: MoneyEntity? = null
+        mRealmHelper.use {
+            val moneyRecord = where(MoneyEntity::class.java)
+                    .equalTo("fundId", fundId
+                    ).findAll()
+
+            if (moneyRecord != null && moneyRecord.size > 0) {
+                moneyEntity = moneyRecord[0] as MoneyEntity
+            }
+        }
+        if (moneyEntity != null) {
+            return moneyEntity!!.money
+        }
+        return ""
+    }
+
+    private fun saveMoney(fundId: String, money: String) {
+        mRealmHelper.use {
+            executeTransaction { realm ->
+                val moneyEntity = MoneyEntity()
+                moneyEntity.fundId = fundId
+                moneyEntity.money = money
+                realm.copyToRealmOrUpdate(moneyEntity)
+            }
+
         }
     }
 }

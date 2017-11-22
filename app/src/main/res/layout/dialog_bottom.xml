@@ -7,31 +7,28 @@
 
 
     <LinearLayout
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingBottom="4dp"
-        android:background="@color/white_smoke"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:background="@color/white_smoke"
+        android:paddingBottom="4dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
 
         <EditText
-            android:id="@+id/etAdd"
+            android:id="@+id/moneyEt"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:inputType="number"
-            android:textColor="@color/colorAccent"
-            />
+            android:textColor="@color/colorAccent" />
 
         <Button
-            android:id="@+id/saveOwn"
+            android:id="@+id/saveBtn"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="4dp"
-            android:text="@string/ensure"
-            style="@style/Widget.AppCompat.Button.Colored"
-            />
+            android:text="@string/ensure" />
 
     </LinearLayout>
 
@@ -66,12 +63,12 @@
             android:gravity="center"
             android:text="涨跌幅" />
 
-    <!--    <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="营收" />-->
+        <!--    <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="营收" />-->
 
 
     </LinearLayout>

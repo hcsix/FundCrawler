@@ -48,11 +48,7 @@ public class HistoryAdapter extends BaseQuickAdapter<HistoryEntity, BaseViewHold
             }
         });
 
-        helper.getConvertView().setOnClickListener(view -> {
-            if (onHistoryListener != null) {
-                onHistoryListener.onFund(item.getFundId());
-            }
-        });
+
     }
 
 
@@ -65,10 +61,5 @@ public class HistoryAdapter extends BaseQuickAdapter<HistoryEntity, BaseViewHold
         void onDelete(HistoryEntity fund);
 
 
-        /**
-         * 点击了选项
-         * @param fundId
-         */
-        void onFund(String fundId);
     }
 }
