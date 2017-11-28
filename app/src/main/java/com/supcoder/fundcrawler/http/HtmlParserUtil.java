@@ -47,9 +47,18 @@ public class HtmlParserUtil {
      */
     public double mul(String v1, String v2) {
         BigDecimal b1 = new BigDecimal(v1);
-        BigDecimal b2 = new BigDecimal(v2);
-        return b1.multiply(b2).doubleValue();
+        if (v2.contains("%")){
+            BigDecimal b2 = new BigDecimal(v2.replace("%",""));
+            return b1.multiply(b2).doubleValue()/100;
+        }else {
+            BigDecimal b2 = new BigDecimal(v2);
+            return b1.multiply(b2).doubleValue();
+        }
     }
+
+
+
+
 
     public List<ProcessMessege> queryProcessInfo2(String fundCode) {
         String url = "http://fund.eastmoney.com/" + fundCode + ".html?spm=aladin";
