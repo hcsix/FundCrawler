@@ -119,7 +119,6 @@ open class MainActivity : AppCompatActivity() {
                     showSnackBar("上一个弹窗还没加载完")
                 }
             }
-
         }
 
 
@@ -149,16 +148,21 @@ open class MainActivity : AppCompatActivity() {
 
     private fun initPopupWindow() {
         mPopupWindow = PopupWindow(this)
-        mPopupWindow!!.width = ViewGroup.LayoutParams.MATCH_PARENT
-        mPopupWindow!!.height = ViewGroup.LayoutParams.WRAP_CONTENT
-        mPopupWindow!!.contentView = LayoutInflater.from(this).inflate(R.layout.pop_history, null)
-        mPopupWindow!!.setBackgroundDrawable(ColorDrawable(0x00000000))
-        mPopupWindow!!.isOutsideTouchable = false
-        mPopupWindow!!.isFocusable = true
+
+
+        mPopupWindow?.apply {
+            width = ViewGroup.LayoutParams.MATCH_PARENT
+            height = ViewGroup.LayoutParams.WRAP_CONTENT
+            contentView = LayoutInflater.from(this@MainActivity).inflate(R.layout.pop_history, null)
+            setBackgroundDrawable(ColorDrawable(0x00000000))
+            isOutsideTouchable = false
+            isFocusable = true
+        }
+
         hisRecyclerView = mPopupWindow!!.contentView.findViewById(R.id.hisRecyclerView)
 
 
-        val listener = HistoryAdapter.OnHistoryListener { fund ->
+        mHisAdapter = HistoryAdapter(mHisData, HistoryAdapter.OnHistoryListener { fund ->
             mRealmHelper.use {
                 val hisRecord = where(HistoryEntity::class.java)
                         .equalTo("fundId",
@@ -169,12 +173,7 @@ open class MainActivity : AppCompatActivity() {
                     refreshHis()
                 }
             }
-        }
-
-
-
-        mHisAdapter = HistoryAdapter(mHisData, listener)
-
+        })
         mHisAdapter.setOnItemClickListener { adapter, view, position ->
 
             val hisEntity = adapter.data[position] as HistoryEntity
@@ -182,17 +181,17 @@ open class MainActivity : AppCompatActivity() {
             editText.setText(fundId)
             editText.setSelection(fundId.length)
             hideKeyboard(editText)
-            mPopupWindow!!.dismiss()
-
+            mPopupWindow?.dismiss()
         }
 
+        hisRecyclerView?.apply {
+            adapter = mHisAdapter
+            layoutManager = LinearLayoutManager(this@MainActivity)
+        }
 
-        hisRecyclerView!!.adapter = mHisAdapter
-        hisRecyclerView!!.layoutManager = LinearLayoutManager(this@MainActivity)
         recyclerView.addItemDecoration(ItemDecoration())
         refreshHis()
-
-        mPopupWindow!!.setOnDismissListener { hideKeyboard(editText) }
+        mPopupWindow?.setOnDismissListener { hideKeyboard(editText) }
     }
 
 
@@ -200,8 +199,10 @@ open class MainActivity : AppCompatActivity() {
      *  初始化SwipeRefreshLayout
      */
     private fun initSwipeRefreshLayout() {
-        swipeRefreshLayout.setColorSchemeResources(R.color.red)
-        swipeRefreshLayout.isEnabled = false
+        swipeRefreshLayout?.apply {
+            setColorSchemeResources(R.color.red)
+            isEnabled = false
+        }
     }
 
     private fun refreshHis() {
@@ -220,17 +221,21 @@ open class MainActivity : AppCompatActivity() {
     private fun initBottomDialog() {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_bottom, null)
         val recyclerView = view.findViewById<RecyclerView>(R.id.bottomRecycler)
-        recyclerView.itemAnimator = DefaultItemAnimator()
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        val mList: List<ProcessMessege>? = null
-        bottomAdapter = BottomSheetAdapter(mList)
-        recyclerView.adapter = bottomAdapter
-
         moneyEt = view.findViewById(R.id.moneyEt)
         saveBtn = view.findViewById(R.id.saveBtn)
 
+        val mList: List<ProcessMessege>? = null
+        bottomAdapter = BottomSheetAdapter(mList)
+
+        recyclerView?.apply {
+            itemAnimator = DefaultItemAnimator()
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = bottomAdapter
+        }
+
+
         bottomDialog = BottomSheetDialog(this)
-        bottomDialog!!.setContentView(view)
+        bottomDialog?.setContentView(view)
     }
 
 
@@ -320,15 +325,15 @@ open class MainActivity : AppCompatActivity() {
      * 展示BottomDialog
      */
     private fun openBottom(list: List<ProcessMessege>, fundId: String) {
-        if (bottomDialog != null) {
-            bottomDialog!!.dismiss()
-
+        bottomDialog?.let {
+            it.dismiss()
             val money = getFundMoney(fundId)
-            moneyEt!!.setText(money)
-            moneyEt!!.setSelection(money.length)
+            moneyEt?.apply {
+                setText(money)
+                setSelection(money.length)
+            }
 
-
-            saveBtn!!.setOnClickListener {
+            saveBtn?.setOnClickListener {
                 if (!TextUtils.isEmpty(moneyEt!!.text.toString())) {
                     saveMoney(fundId, moneyEt!!.text.toString())
                     refreshBottomDialog(list, fundId, moneyEt!!.text.toString())
@@ -337,7 +342,7 @@ open class MainActivity : AppCompatActivity() {
                 }
             }
             refreshBottomDialog(list, fundId, money)
-            bottomDialog!!.show()
+            it.show()
         }
     }
 
@@ -367,10 +372,12 @@ open class MainActivity : AppCompatActivity() {
                 moneyEntity = moneyRecord[0] as MoneyEntity
             }
         }
-        if (moneyEntity != null) {
-            return moneyEntity!!.money
+
+        return if (moneyEntity != null) {
+            moneyEntity!!.money
+        } else {
+            ""
         }
-        return ""
     }
 
     private fun saveMoney(fundId: String, money: String) {

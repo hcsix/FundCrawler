@@ -167,7 +167,7 @@ public class HtmlParserUtil {
     }
 
     private ProcessMessege queryUpOrDown(String fundCode) {
-        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=" + new Date().getTime();
+        String url = "http://fundgz.1234567.com.cn/js/" + fundCode + ".js?rt=" + System.currentTimeMillis();
         InputStream inputStream = getResourceFromUrl(url);
         String js = new String(readInputStream(inputStream, 170));
         js = js.substring(js.indexOf("gszzl\":\"") + "gszzl\":\"".length(),
